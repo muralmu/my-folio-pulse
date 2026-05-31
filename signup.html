@@ -458,7 +458,7 @@
           <div class="search-spinner" id="search-spinner"></div>
           <div class="dropdown" id="fund-dropdown"></div>
         </div>
-        <div class="hint">Search by fund name. Click a result to add it to your list. Max 10 funds.</div>
+        <div class="hint">Search by fund name and click a result to add it. <strong>Maximum 10 funds per account.</strong> Adding more than 10 is not permitted.</div>
       </div>
 
       <div class="chips-wrap" id="chips-wrap"></div>
@@ -635,12 +635,15 @@
     }
   }
 
+  // Store search results so onclick can look up by index safely
+  let _dropdownResults = [];
+
   function renderDropdown(funds) {
     const dropdown = document.getElementById('fund-dropdown');
     const alreadyAdded = new Set(selectedFunds.map(f => f.scheme));
 
     // Filter to Growth plans only, exclude already-added
-    const filtered = funds
+    _dropdownResults = funds
       .filter(f => {
         const name = f.schemeName || '';
         return (
@@ -650,18 +653,28 @@
       })
       .slice(0, 8);
 
-    if (filtered.length === 0) {
+    if (_dropdownResults.length === 0) {
       dropdown.innerHTML = '<div class="dropdown-empty">No matching funds found. Try a different name.</div>';
       dropdown.classList.add('open');
       return;
     }
 
-    dropdown.innerHTML = filtered.map(f => `
-      <div class="dropdown-item" onclick="addFund('${f.schemeCode}', ${JSON.stringify(f.schemeName).replace(/'/g, "&#39;")}, '')">
+    dropdown.innerHTML = _dropdownResults.map((f, i) => `
+      <div class="dropdown-item" data-idx="${i}">
         <div class="fund-name">${f.schemeName}</div>
         <div class="fund-meta">Scheme Code: ${f.schemeCode}</div>
       </div>
     `).join('');
+
+    // Attach click handlers via event delegation (avoids escaping issues)
+    dropdown.querySelectorAll('.dropdown-item').forEach(el => {
+      el.addEventListener('click', () => {
+        const idx = parseInt(el.getAttribute('data-idx'));
+        const f = _dropdownResults[idx];
+        if (f) addFund(String(f.schemeCode), f.schemeName, '');
+      });
+    });
+
     dropdown.classList.add('open');
   }
 

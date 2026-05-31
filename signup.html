@@ -748,6 +748,7 @@
     btn.textContent = 'Submitting…';
 
     const payload = {
+      token:    'mfp_2026_secret',
       name:     document.getElementById('input-name').value.trim(),
       email:    document.getElementById('input-email').value.trim(),
       timezone: document.getElementById('input-timezone').value,
@@ -755,16 +756,9 @@
       submitted_at: new Date().toISOString(),
     };
 
-    const APPS_SCRIPT_URL = 'REPLACE_WITH_APPS_SCRIPT_URL';
+    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzaCu3V4h0OXjPxCnsdmxSVaB_6iQE-iNBxyjJykIGXVEgRzHGl5mmR0TB3rjo9eSN4/exec';
 
     try {
-      if (APPS_SCRIPT_URL === 'REPLACE_WITH_APPS_SCRIPT_URL') {
-        // Demo mode — simulate success
-        await new Promise(r => setTimeout(r, 1000));
-        showSuccess(payload.name);
-        return;
-      }
-
       const res = await fetch(APPS_SCRIPT_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

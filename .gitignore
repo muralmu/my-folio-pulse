@@ -1,0 +1,14 @@
+# Credentials — never commit these
+*.env
+.env
+secrets/
+service_account.json
+*credentials*.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# macOS
+.DS_Store

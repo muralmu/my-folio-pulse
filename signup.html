@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Sign Up — MyFolioPulse</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --blue-dark:  #1e3a5f;
+    --blue:       #2563eb;
+    --blue-light: #dbeafe;
+    --green:      #16a34a;
+    --red:        #dc2626;
+    --text:       #1a1a2e;
+    --muted:      #64748b;
+    --border:     #e2e8f0;
+    --bg:         #f8fafc;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── NAV ── */
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 40px;
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo { font-size: 20px; font-weight: 800; color: var(--blue-dark); letter-spacing: -0.5px; }
+  .logo span { color: var(--blue); }
+  nav a { font-size: 14px; color: var(--muted); }
+  nav a:hover { color: var(--blue); }
+
+  /* ── LAYOUT ── */
+  .page-wrap {
+    max-width: 640px;
+    margin: 48px auto;
+    padding: 0 20px 60px;
+  }
+
+  .page-title {
+    text-align: center;
+    margin-bottom: 36px;
+  }
+  .page-title h1 {
+    font-size: 28px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--blue-dark);
+  }
+  .page-title p {
+    color: var(--muted);
+    margin-top: 8px;
+    font-size: 15px;
+  }
+
+  /* ── CARD ── */
+  .card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 36px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+  }
+
+  /* ── STEPS INDICATOR ── */
+  .steps-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 36px;
+  }
+  .step-dot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .step-dot .dot {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+    border: 2px solid var(--border);
+    background: #fff;
+    color: var(--muted);
+    transition: all 0.2s;
+  }
+  .step-dot .dot.active {
+    background: var(--blue);
+    border-color: var(--blue);
+    color: #fff;
+  }
+  .step-dot .dot.done {
+    background: var(--green);
+    border-color: var(--green);
+    color: #fff;
+  }
+  .step-dot .dot-label {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 500;
+  }
+  .step-dot .dot-label.active { color: var(--blue); font-weight: 700; }
+  .step-line {
+    width: 60px; height: 2px;
+    background: var(--border);
+    margin: 0 4px;
+    margin-bottom: 22px;
+    transition: background 0.2s;
+  }
+  .step-line.done { background: var(--green); }
+
+  /* ── FORM STEPS ── */
+  .form-step { display: none; }
+  .form-step.active { display: block; }
+
+  /* ── FIELD ── */
+  .field { margin-bottom: 22px; }
+  .field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 7px;
+  }
+  .field label span { color: var(--red); margin-left: 2px; }
+  .field input, .field select {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-size: 15px;
+    color: var(--text);
+    background: #fff;
+    transition: border-color 0.15s;
+    outline: none;
+    appearance: none;
+  }
+  .field input:focus, .field select:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+  }
+  .field .hint {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 5px;
+  }
+
+  /* ── FUND SEARCH ── */
+  .search-wrap { position: relative; }
+  .search-wrap input { padding-left: 38px; }
+  .search-icon {
+    position: absolute;
+    left: 12px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 16px;
+    pointer-events: none;
+  }
+  .search-spinner {
+    position: absolute;
+    right: 12px; top: 50%;
+    transform: translateY(-50%);
+    display: none;
+    width: 16px; height: 16px;
+    border: 2px solid var(--border);
+    border-top-color: var(--blue);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+  @keyframes spin { to { transform: translateY(-50%) rotate(360deg); } }
+
+  .dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0; right: 0;
+    background: #fff;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    z-index: 50;
+    max-height: 240px;
+    overflow-y: auto;
+    display: none;
+  }
+  .dropdown.open { display: block; }
+  .dropdown-item {
+    padding: 11px 14px;
+    cursor: pointer;
+    border-bottom: 1px solid #f8f8f8;
+    transition: background 0.1s;
+  }
+  .dropdown-item:last-child { border-bottom: none; }
+  .dropdown-item:hover { background: var(--blue-light); }
+  .dropdown-item .fund-name { font-size: 13px; font-weight: 600; color: var(--text); }
+  .dropdown-item .fund-meta { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .dropdown-empty {
+    padding: 16px 14px;
+    font-size: 13px;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  /* ── CHIPS ── */
+  .chips-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+    min-height: 0;
+  }
+  .chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--blue-light);
+    color: var(--blue-dark);
+    border: 1px solid #bfdbfe;
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    max-width: 100%;
+  }
+  .chip-remove {
+    cursor: pointer;
+    font-size: 14px;
+    color: var(--blue);
+    line-height: 1;
+    flex-shrink: 0;
+  }
+  .chip-remove:hover { color: var(--red); }
+  .funds-counter {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 8px;
+  }
+  .funds-counter span { font-weight: 700; color: var(--text); }
+
+  /* ── PRIVACY CHECKBOX ── */
+  .checkbox-wrap {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .checkbox-wrap input[type=checkbox] {
+    width: 18px; height: 18px;
+    margin-top: 2px;
+    accent-color: var(--blue);
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+  .checkbox-wrap label {
+    font-size: 13px;
+    color: var(--muted);
+    cursor: pointer;
+    line-height: 1.5;
+  }
+  .checkbox-wrap label a { color: var(--blue); }
+
+  /* ── BUTTONS ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 28px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+  }
+  .btn-primary {
+    background: var(--blue);
+    color: #fff;
+    width: 100%;
+  }
+  .btn-primary:hover { background: var(--blue-dark); }
+  .btn-primary:disabled {
+    background: #94a3b8;
+    cursor: not-allowed;
+  }
+  .btn-secondary {
+    background: var(--bg);
+    color: var(--muted);
+    border: 1.5px solid var(--border);
+  }
+  .btn-secondary:hover { border-color: var(--blue); color: var(--blue); }
+  .btn-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+  }
+  .btn-row .btn-secondary { flex-shrink: 0; }
+  .btn-row .btn-primary { flex: 1; }
+
+  /* ── SUCCESS STATE ── */
+  .success-view {
+    display: none;
+    text-align: center;
+    padding: 20px 0;
+  }
+  .success-icon {
+    font-size: 56px;
+    margin-bottom: 20px;
+  }
+  .success-view h2 {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--blue-dark);
+    margin-bottom: 10px;
+  }
+  .success-view p {
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.6;
+    max-width: 400px;
+    margin: 0 auto 24px;
+  }
+  .success-note {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 13px;
+    color: var(--muted);
+    text-align: left;
+    max-width: 420px;
+    margin: 0 auto;
+  }
+  .success-note strong { color: var(--text); }
+
+  /* ── ERROR ── */
+  .form-error {
+    background: #fff1f2;
+    border: 1px solid #fca5a5;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    color: var(--red);
+    margin-bottom: 16px;
+    display: none;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 500px) {
+    nav { padding: 14px 20px; }
+    .card { padding: 24px 20px; }
+    .page-wrap { margin: 24px auto; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" style="text-decoration:none;">
+    <div class="logo">My<span>Folio</span>Pulse</div>
+  </a>
+  <a href="index.html">← Back to home</a>
+</nav>
+
+<div class="page-wrap">
+  <div class="page-title">
+    <h1>Set Up Your Daily Report</h1>
+    <p>Takes less than 2 minutes. Free forever.</p>
+  </div>
+
+  <div class="card">
+
+    <!-- Steps indicator -->
+    <div class="steps-bar">
+      <div class="step-dot">
+        <div class="dot active" id="dot-1">1</div>
+        <div class="dot-label active" id="label-1">You</div>
+      </div>
+      <div class="step-line" id="line-1"></div>
+      <div class="step-dot">
+        <div class="dot" id="dot-2">2</div>
+        <div class="dot-label" id="label-2">Timezone</div>
+      </div>
+      <div class="step-line" id="line-2"></div>
+      <div class="step-dot">
+        <div class="dot" id="dot-3">3</div>
+        <div class="dot-label" id="label-3">Your Funds</div>
+      </div>
+      <div class="step-line" id="line-3"></div>
+      <div class="step-dot">
+        <div class="dot" id="dot-4">4</div>
+        <div class="dot-label" id="label-4">Confirm</div>
+      </div>
+    </div>
+
+    <div class="form-error" id="form-error"></div>
+
+    <!-- ── STEP 1: Personal Info ── -->
+    <div class="form-step active" id="step-1">
+      <div class="field">
+        <label>Full Name <span>*</span></label>
+        <input type="text" id="input-name" placeholder="e.g. Priya Sharma" autocomplete="name">
+      </div>
+      <div class="field">
+        <label>Email Address <span>*</span></label>
+        <input type="email" id="input-email" placeholder="e.g. priya@gmail.com" autocomplete="email">
+        <div class="hint">Your daily report will be delivered here.</div>
+      </div>
+      <button class="btn btn-primary" onclick="goToStep(2)">Continue →</button>
+    </div>
+
+    <!-- ── STEP 2: Timezone ── -->
+    <div class="form-step" id="step-2">
+      <div class="field">
+        <label>Where do you live? <span>*</span></label>
+        <select id="input-timezone">
+          <option value="">— Select your region —</option>
+          <option value="UAE">🇦🇪 UAE (8:00 AM GST)</option>
+          <option value="EU">🇪🇺 Europe / CET (8:00 AM CET)</option>
+          <option value="UK">🇬🇧 United Kingdom (8:00 AM GMT)</option>
+          <option value="US_EAST">🇺🇸 US East Coast (8:00 AM EST)</option>
+          <option value="US_WEST">🇺🇸 US West Coast (8:00 AM PST)</option>
+        </select>
+        <div class="hint">We'll deliver your report at 8am in your local timezone every day.</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="goToStep(1)">← Back</button>
+        <button class="btn btn-primary" onclick="goToStep(3)">Continue →</button>
+      </div>
+    </div>
+
+    <!-- ── STEP 3: Fund Search ── -->
+    <div class="form-step" id="step-3">
+      <div class="field">
+        <label>Search & Add Your Mutual Funds <span>*</span></label>
+        <div class="search-wrap">
+          <span class="search-icon">🔍</span>
+          <input
+            type="text"
+            id="fund-search"
+            placeholder="Type fund name e.g. HDFC Nifty 50..."
+            autocomplete="off"
+            oninput="onFundSearch(this.value)"
+            onfocus="onFundSearch(this.value)"
+          >
+          <div class="search-spinner" id="search-spinner"></div>
+          <div class="dropdown" id="fund-dropdown"></div>
+        </div>
+        <div class="hint">Search by fund name. Click a result to add it to your list. Max 10 funds.</div>
+      </div>
+
+      <div class="chips-wrap" id="chips-wrap"></div>
+      <div class="funds-counter" id="funds-counter" style="display:none;">
+        <span id="fund-count">0</span>/10 funds added
+      </div>
+
+      <div class="btn-row" style="margin-top:24px;">
+        <button class="btn btn-secondary" onclick="goToStep(2)">← Back</button>
+        <button class="btn btn-primary" onclick="goToStep(4)">Review & Confirm →</button>
+      </div>
+    </div>
+
+    <!-- ── STEP 4: Confirm ── -->
+    <div class="form-step" id="step-4">
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:24px;">
+        <div style="font-size:13px;color:var(--muted);margin-bottom:14px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Your Details</div>
+        <div style="display:grid;gap:10px;">
+          <div style="display:flex;justify-content:space-between;font-size:14px;">
+            <span style="color:var(--muted);">Name</span>
+            <span id="confirm-name" style="font-weight:600;"></span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:14px;">
+            <span style="color:var(--muted);">Email</span>
+            <span id="confirm-email" style="font-weight:600;"></span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:14px;">
+            <span style="color:var(--muted);">Timezone</span>
+            <span id="confirm-timezone" style="font-weight:600;"></span>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:14px;align-items:flex-start;">
+            <span style="color:var(--muted);">Funds</span>
+            <span id="confirm-funds" style="font-weight:600;text-align:right;max-width:300px;line-height:1.6;"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="checkbox-wrap">
+        <input type="checkbox" id="privacy-check">
+        <label for="privacy-check">
+          I've read the <a href="privacy.html" target="_blank">Privacy Notice</a> and agree that MyFolioPulse may store my name, email, timezone and fund preferences to generate my daily report.
+        </label>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="goToStep(3)">← Back</button>
+        <button class="btn btn-primary" id="submit-btn" onclick="submitForm()">
+          ✅ Confirm & Sign Me Up
+        </button>
+      </div>
+    </div>
+
+    <!-- ── SUCCESS ── -->
+    <div class="success-view" id="success-view">
+      <div class="success-icon">🎉</div>
+      <h2>You're all set!</h2>
+      <p>Your first report will arrive tomorrow morning at <strong>8am your local time</strong>. We've also sent a confirmation to your email.</p>
+      <div class="success-note">
+        <strong>📌 Save your dashboard link</strong><br>
+        Your personal dashboard will be sent in your first email — bookmark it to check your portfolio anytime without waiting for the daily digest.
+      </div>
+      <div style="margin-top:24px;">
+        <a href="index.html" style="color:var(--blue);font-size:14px;font-weight:600;">← Back to home</a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // ── State ──────────────────────────────────────────────────────────────────
+  const MAX_FUNDS = 10;
+  let selectedFunds = []; // [{name, scheme, category}]
+  let searchTimeout = null;
+
+  const TIMEZONE_LABELS = {
+    "UAE":      "🇦🇪 UAE (8:00 AM GST)",
+    "EU":       "🇪🇺 Europe / CET (8:00 AM CET)",
+    "UK":       "🇬🇧 United Kingdom (8:00 AM GMT)",
+    "US_EAST":  "🇺🇸 US East Coast (8:00 AM EST)",
+    "US_WEST":  "🇺🇸 US West Coast (8:00 AM PST)",
+  };
+
+  // ── Step Navigation ────────────────────────────────────────────────────────
+  function goToStep(n) {
+    clearError();
+    if (n === 2 && !validateStep1()) return;
+    if (n === 4 && !validateStep3()) return;
+    if (n === 3 && !validateStep2()) return;
+
+    // Update step UI
+    for (let i = 1; i <= 4; i++) {
+      const dot = document.getElementById(`dot-${i}`);
+      const label = document.getElementById(`label-${i}`);
+      dot.classList.remove('active', 'done');
+      label.classList.remove('active');
+      if (i < n) { dot.classList.add('done'); dot.innerHTML = '✓'; }
+      else if (i === n) { dot.classList.add('active'); dot.innerHTML = i; label.classList.add('active'); }
+      else { dot.innerHTML = i; }
+    }
+    for (let i = 1; i <= 3; i++) {
+      const line = document.getElementById(`line-${i}`);
+      line.classList.toggle('done', i < n);
+    }
+
+    // Show correct step
+    document.querySelectorAll('.form-step').forEach(s => s.classList.remove('active'));
+    document.getElementById(`step-${n}`).classList.add('active');
+
+    // Populate confirm step
+    if (n === 4) populateConfirm();
+  }
+
+  // ── Validation ─────────────────────────────────────────────────────────────
+  function showError(msg) {
+    const el = document.getElementById('form-error');
+    el.textContent = msg;
+    el.style.display = 'block';
+    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+  function clearError() {
+    document.getElementById('form-error').style.display = 'none';
+  }
+
+  function validateStep1() {
+    const name = document.getElementById('input-name').value.trim();
+    const email = document.getElementById('input-email').value.trim();
+    if (!name) { showError('Please enter your name.'); return false; }
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      showError('Please enter a valid email address.'); return false;
+    }
+    return true;
+  }
+  function validateStep2() {
+    if (!document.getElementById('input-timezone').value) {
+      showError('Please select your timezone.'); return false;
+    }
+    return true;
+  }
+  function validateStep3() {
+    if (selectedFunds.length === 0) {
+      showError('Please add at least one mutual fund.'); return false;
+    }
+    return true;
+  }
+
+  // ── Fund Search ────────────────────────────────────────────────────────────
+  function onFundSearch(query) {
+    clearTimeout(searchTimeout);
+    const dropdown = document.getElementById('fund-dropdown');
+    const spinner = document.getElementById('search-spinner');
+
+    if (query.length < 2) {
+      dropdown.classList.remove('open');
+      return;
+    }
+
+    spinner.style.display = 'block';
+    searchTimeout = setTimeout(() => fetchFunds(query), 350);
+  }
+
+  async function fetchFunds(query) {
+    const dropdown = document.getElementById('fund-dropdown');
+    const spinner = document.getElementById('search-spinner');
+    try {
+      const res = await fetch(`https://api.mfapi.in/mf/search?q=${encodeURIComponent(query)}`);
+      const data = await res.json();
+      spinner.style.display = 'none';
+      renderDropdown(data || []);
+    } catch (e) {
+      spinner.style.display = 'none';
+      dropdown.innerHTML = '<div class="dropdown-empty">Unable to search right now. Try again.</div>';
+      dropdown.classList.add('open');
+    }
+  }
+
+  function renderDropdown(funds) {
+    const dropdown = document.getElementById('fund-dropdown');
+    const alreadyAdded = new Set(selectedFunds.map(f => f.scheme));
+
+    // Filter to Growth plans only, exclude already-added
+    const filtered = funds
+      .filter(f => {
+        const name = f.schemeName || '';
+        return (
+          (name.toLowerCase().includes('growth') || !name.toLowerCase().includes('idcw')) &&
+          !alreadyAdded.has(String(f.schemeCode))
+        );
+      })
+      .slice(0, 8);
+
+    if (filtered.length === 0) {
+      dropdown.innerHTML = '<div class="dropdown-empty">No matching funds found. Try a different name.</div>';
+      dropdown.classList.add('open');
+      return;
+    }
+
+    dropdown.innerHTML = filtered.map(f => `
+      <div class="dropdown-item" onclick="addFund('${f.schemeCode}', ${JSON.stringify(f.schemeName).replace(/'/g, "&#39;")}, '')">
+        <div class="fund-name">${f.schemeName}</div>
+        <div class="fund-meta">Scheme Code: ${f.schemeCode}</div>
+      </div>
+    `).join('');
+    dropdown.classList.add('open');
+  }
+
+  function addFund(scheme, name, category) {
+    if (selectedFunds.length >= MAX_FUNDS) {
+      showError(`You can add a maximum of ${MAX_FUNDS} funds.`);
+      return;
+    }
+    if (selectedFunds.find(f => f.scheme === String(scheme))) return;
+
+    selectedFunds.push({ scheme: String(scheme), name, category });
+    document.getElementById('fund-search').value = '';
+    document.getElementById('fund-dropdown').classList.remove('open');
+    renderChips();
+    clearError();
+  }
+
+  function removeFund(scheme) {
+    selectedFunds = selectedFunds.filter(f => f.scheme !== scheme);
+    renderChips();
+  }
+
+  function renderChips() {
+    const wrap = document.getElementById('chips-wrap');
+    const counter = document.getElementById('funds-counter');
+    const countEl = document.getElementById('fund-count');
+
+    wrap.innerHTML = selectedFunds.map(f => `
+      <div class="chip">
+        <span title="${f.name}">${truncate(f.name, 40)}</span>
+        <span class="chip-remove" onclick="removeFund('${f.scheme}')" title="Remove">×</span>
+      </div>
+    `).join('');
+
+    counter.style.display = selectedFunds.length > 0 ? 'block' : 'none';
+    countEl.textContent = selectedFunds.length;
+  }
+
+  function truncate(str, len) {
+    return str.length > len ? str.slice(0, len) + '…' : str;
+  }
+
+  // Close dropdown on outside click
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.search-wrap')) {
+      document.getElementById('fund-dropdown').classList.remove('open');
+    }
+  });
+
+  // ── Confirm Step ───────────────────────────────────────────────────────────
+  function populateConfirm() {
+    document.getElementById('confirm-name').textContent = document.getElementById('input-name').value.trim();
+    document.getElementById('confirm-email').textContent = document.getElementById('input-email').value.trim();
+    document.getElementById('confirm-timezone').textContent = TIMEZONE_LABELS[document.getElementById('input-timezone').value] || '';
+    document.getElementById('confirm-funds').innerHTML = selectedFunds.map(f =>
+      `<span style="display:block;">${f.name}</span>`
+    ).join('');
+  }
+
+  // ── Submit ─────────────────────────────────────────────────────────────────
+  async function submitForm() {
+    clearError();
+
+    if (!document.getElementById('privacy-check').checked) {
+      showError('Please read and accept the Privacy Notice to continue.');
+      return;
+    }
+
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true;
+    btn.textContent = 'Submitting…';
+
+    const payload = {
+      name:     document.getElementById('input-name').value.trim(),
+      email:    document.getElementById('input-email').value.trim(),
+      timezone: document.getElementById('input-timezone').value,
+      funds:    selectedFunds,
+      submitted_at: new Date().toISOString(),
+    };
+
+    const APPS_SCRIPT_URL = 'REPLACE_WITH_APPS_SCRIPT_URL';
+
+    try {
+      if (APPS_SCRIPT_URL === 'REPLACE_WITH_APPS_SCRIPT_URL') {
+        // Demo mode — simulate success
+        await new Promise(r => setTimeout(r, 1000));
+        showSuccess(payload.name);
+        return;
+      }
+
+      const res = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const result = await res.json();
+      if (result.status === 'ok') {
+        showSuccess(payload.name);
+      } else {
+        throw new Error(result.message || 'Submission failed');
+      }
+    } catch (e) {
+      btn.disabled = false;
+      btn.textContent = '✅ Confirm & Sign Me Up';
+      showError('Something went wrong. Please try again in a moment.');
+    }
+  }
+
+  function showSuccess(name) {
+    document.querySelectorAll('.form-step').forEach(s => s.style.display = 'none');
+    document.querySelector('.steps-bar').style.display = 'none';
+    const sv = document.getElementById('success-view');
+    sv.style.display = 'block';
+    sv.querySelector('h2').textContent = `You're all set, ${name.split(' ')[0]}!`;
+  }
+</script>
+
+</body>
+</html>

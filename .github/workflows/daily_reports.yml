@@ -1,0 +1,71 @@
+name: MyFolioPulse — Daily Reports
+
+on:
+  workflow_dispatch:
+    inputs:
+      timezone:
+        description: 'Timezone to run (UAE | EU | UK | US_EAST | US_WEST | ALL)'
+        required: false
+        default: 'ALL'
+  schedule:
+    - cron: '0 4 * * *'   # UAE   — 8:00 AM GST
+    - cron: '0 7 * * *'   # EU    — 8:00 AM CET
+    - cron: '0 8 * * *'   # UK    — 8:00 AM GMT
+    - cron: '0 13 * * *'  # US East — 8:00 AM EST
+    - cron: '0 16 * * *'  # US West — 8:00 AM PST
+
+permissions:
+  contents: write
+
+jobs:
+  generate-reports:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests pytz
+
+      - name: Determine timezone for this run
+        id: tz
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "timezone=${{ github.event.inputs.timezone }}" >> $GITHUB_OUTPUT
+          else
+            HOUR=$(date -u +%H)
+            case $HOUR in
+              04) echo "timezone=UAE"      >> $GITHUB_OUTPUT ;;
+              07) echo "timezone=EU"       >> $GITHUB_OUTPUT ;;
+              08) echo "timezone=UK"       >> $GITHUB_OUTPUT ;;
+              13) echo "timezone=US_EAST"  >> $GITHUB_OUTPUT ;;
+              16) echo "timezone=US_WEST"  >> $GITHUB_OUTPUT ;;
+              *)  echo "timezone=ALL"      >> $GITHUB_OUTPUT ;;
+            esac
+          fi
+
+      - name: Generate reports
+        env:
+          SHEET_CSV_URL:      ${{ secrets.SHEET_CSV_URL }}
+          GMAIL_USER:         ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          RUN_TIMEZONE:       ${{ steps.tz.outputs.timezone }}
+        run: python scripts/generate_reports.py
+
+      - name: Commit and push dashboards
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add users/
+          git diff --cached --quiet || git commit -m "chore: dashboards $(date +'%Y-%m-%d %H:%M UTC')"
+          git push

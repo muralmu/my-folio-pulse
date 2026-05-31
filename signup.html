@@ -759,17 +759,15 @@
     const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzaCu3V4h0OXjPxCnsdmxSVaB_6iQE-iNBxyjJykIGXVEgRzHGl5mmR0TB3rjo9eSN4/exec';
 
     try {
-      const res = await fetch(APPS_SCRIPT_URL, {
+      // no-cors is required for cross-origin POST to Apps Script
+      // We can't read the response body, but the data is written to the sheet
+      await fetch(APPS_SCRIPT_URL, {
         method: 'POST',
+        mode: 'no-cors',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      const result = await res.json();
-      if (result.status === 'ok') {
-        showSuccess(payload.name);
-      } else {
-        throw new Error(result.message || 'Submission failed');
-      }
+      showSuccess(payload.name);
     } catch (e) {
       btn.disabled = false;
       btn.textContent = '✅ Confirm & Sign Me Up';

@@ -8,11 +8,14 @@ on:
         required: false
         default: 'ALL'
   schedule:
-    - cron: '0 4 * * *'   # UAE   — 8:00 AM GST
-    - cron: '0 7 * * *'   # EU    — 8:00 AM CET
-    - cron: '0 8 * * *'   # UK    — 8:00 AM GMT
-    - cron: '0 13 * * *'  # US East — 8:00 AM EST
-    - cron: '0 16 * * *'  # US West — 8:00 AM PST
+    - cron: '0 4 * * *'   # UAE     — 8:00 AM GST  (UTC+4, year-round)
+    - cron: '0 6 * * *'   # EU CEST — 8:00 AM CEST (UTC+2, Apr–Oct)
+    - cron: '0 7 * * *'   # EU CET  — 8:00 AM CET  (UTC+1, Oct–Apr) + UK BST (UTC+1, Mar–Oct)
+    - cron: '0 8 * * *'   # UK GMT  — 8:00 AM GMT  (UTC+0, Oct–Mar)
+    - cron: '0 13 * * *'  # US East — 8:00 AM EST  (UTC-5, Nov–Mar)
+    - cron: '0 14 * * *'  # US East — 8:00 AM EDT  (UTC-4, Mar–Nov)
+    - cron: '0 16 * * *'  # US West — 8:00 AM PST  (UTC-8, Nov–Mar)
+    - cron: '0 15 * * *'  # US West — 8:00 AM PDT  (UTC-7, Mar–Nov)
 
 permissions:
   contents: write
@@ -46,15 +49,25 @@ jobs:
             HOUR=$(date -u +%H)
             case $HOUR in
               04) echo "timezone=UAE"      >> $GITHUB_OUTPUT ;;
+              06) echo "timezone=EU"       >> $GITHUB_OUTPUT ;;
               07) echo "timezone=EU"       >> $GITHUB_OUTPUT ;;
               08) echo "timezone=UK"       >> $GITHUB_OUTPUT ;;
               13) echo "timezone=US_EAST"  >> $GITHUB_OUTPUT ;;
+              14) echo "timezone=US_EAST"  >> $GITHUB_OUTPUT ;;
+              15) echo "timezone=US_WEST"  >> $GITHUB_OUTPUT ;;
               16) echo "timezone=US_WEST"  >> $GITHUB_OUTPUT ;;
-              *)  echo "timezone=ALL"      >> $GITHUB_OUTPUT ;;
+              *)  echo "timezone=NONE"     >> $GITHUB_OUTPUT ;;
             esac
           fi
 
+      - name: Skip if no timezone matched
+        if: steps.tz.outputs.timezone == 'NONE'
+        run: |
+          echo "No timezone matched for this run hour. Skipping."
+          exit 0
+
       - name: Generate reports
+        if: steps.tz.outputs.timezone != 'NONE'
         env:
           SHEET_CSV_URL:      ${{ secrets.SHEET_CSV_URL }}
           GMAIL_USER:         ${{ secrets.GMAIL_USER }}
@@ -63,6 +76,7 @@ jobs:
         run: python scripts/generate_reports.py
 
       - name: Commit and push dashboards
+        if: steps.tz.outputs.timezone != 'NONE'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
